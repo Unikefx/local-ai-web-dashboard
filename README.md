@@ -82,3 +82,7 @@ The architecture is built cleanly to support future extensions:
 - Side-by-side model comparison (Qwen vs Llama)
 - File/PDF upload & local document RAG search
 - Vision-capable multimodal models
+
+## Release Notes
+
+See [RELEASE.md](RELEASE.md) for version 1.0.0 release notes and feature breakdown.
