@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Ollama AI Chat</title>
+  
+  <!-- Local Vendor Stylesheets & Fonts -->
+  <link rel="stylesheet" href="vendor/tokyo-night-dark.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon">🤖</div>
+          <div class="brand-text">
+            <span class="brand-name">Local AI</span>
+            <span class="brand-tag">Ollama Powered</span>
+          </div>
+        </div>
+        <button id="closeSidebarBtn" class="icon-btn mobile-only" title="Close Sidebar">✕</button>
+      </div>
+
+      <button id="newChatBtn" class="new-chat-btn">
+        <span class="plus-icon">＋</span>
+        <span>New Chat</span>
+        <kbd class="kbd-shortcut">Ctrl+N</kbd>
+      </button>
+
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="chatSearchInput" placeholder="Search conversations..." autocomplete="off">
+      </div>
+
+      <div class="sidebar-section-title">CHATS HISTORY</div>
+
+      <div id="chatList" class="chat-list">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="status-card">
+          <div class="status-indicator">
+            <span id="statusDot" class="status-dot"></span>
+            <span id="statusText">Connecting...</span>
+          </div>
+          <button id="refreshModelsBtn" class="icon-btn" title="Refresh Ollama & Models">↻</button>
+        </div>
+
+        <div class="sidebar-actions">
+          <button id="settingsModalBtn" class="sidebar-action-btn">
+            <span>⚙️ Settings & System Prompt</span>
+          </button>
+          <button id="clearAllBtn" class="sidebar-action-btn danger">
+            <span>🗑️ Clear History</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="toggleSidebarBtn" class="icon-btn" title="Toggle Sidebar">☰</button>
+          <div class="chat-info">
+            <div id="chatTitle" class="chat-title" contenteditable="false" title="Click to rename">New Chat</div>
+            <button id="renameChatBtn" class="icon-btn small" title="Rename Chat">✏️</button>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="model-select-wrapper">
+            <label for="modelSelect" class="model-label">Model:</label>
+            <div class="select-box">
+              <select id="modelSelect">
+                <!-- Dynamically loaded from Ollama tags -->
+                <option value="qwen2.5:latest">Qwen 2.5 Latest</option>
+                <option value="llama3.2:3b">Llama 3.2 3B</option>
+                <option value="qwen2.5:3b">Qwen 2.5 3B</option>
+              </select>
+              <span class="select-arrow">▼</span>
+            </div>
+          </div>
+          <span id="modelInfoBadge" class="model-badge">7.6B</span>
+          <button id="helpModalBtn" class="icon-btn" title="Keyboard Shortcuts & Info">❓</button>
+        </div>
+      </header>
+
+      <!-- Messages Stream Container -->
+      <section id="messagesContainer" class="messages-container">
+        <!-- Empty State Welcome -->
+        <div id="emptyState" class="empty-state">
+          <div class="empty-hero">
+            <div class="hero-avatar-wrapper">
+              <div class="hero-avatar">✨</div>
+              <div class="hero-ring"></div>
+            </div>
+            <h2>What can I help with today?</h2>
+            <p>Runs 100% locally on your PC using Ollama models. Your data never leaves this machine.</p>
+          </div>
+
+          <div class="prompt-suggestions">
+            <button class="suggestion-card" data-prompt="Explain ESP32 FreeRTOS task scheduling with a simple code example.">
+              <span class="suggestion-icon">⚡</span>
+              <div class="suggestion-text">
+                <strong>ESP32 FreeRTOS</strong>
+                <span>Task scheduling & code example</span>
+              </div>
+            </button>
+
+            <button class="suggestion-card" data-prompt="Write a Python script to monitor local network devices and log active IPs.">
+              <span class="suggestion-icon">🐍</span>
+              <div class="suggestion-text">
+                <strong>Python Automation</strong>
+                <span>Network scanner & device monitor</span>
+              </div>
+            </button>
+
+            <button class="suggestion-card" data-prompt="Compare Qwen 2.5 vs Llama 3.2 for coding and reasoning tasks.">
+              <span class="suggestion-icon">🧠</span>
+              <div class="suggestion-text">
+                <strong>Model Comparison</strong>
+                <span>Qwen 2.5 vs Llama 3.2 strength analysis</span>
+              </div>
+            </button>
+
+            <button class="suggestion-card" data-prompt="Help me design a clean schematic setup for an Arduino microcontroller project.">
+              <span class="suggestion-icon">🔌</span>
+              <div class="suggestion-text">
+                <strong>Electronics Design</strong>
+                <span>Arduino circuit & power distribution</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cute AI Processing / Thinking Bar -->
+      <div id="aiProcessingState" class="ai-processing-bar hidden">
+        <div class="cute-ai-avatar">
+          <span class="robot-face">(•̀ᴗ•́)و</span>
+          <span class="sparkle s1">✨</span>
+          <span class="sparkle s2">💫</span>
+        </div>
+        <div class="processing-text-wrapper">
+          <span class="processing-title">AI is thinking & generating...</span>
+          <div class="wave-dots">
+            <span>.</span><span>.</span><span>.</span>
+          </div>
+        </div>
+        <button id="stopGenBtn" class="stop-btn" title="Stop generating response">
+          <span class="stop-icon">⏹</span>
+          <span>Stop Generation</span>
+        </button>
+      </div>
+
+      <!-- Composer Input -->
+      <div class="composer-container">
+        <form id="composerForm" class="composer-form">
+          <textarea id="promptInput" rows="1" placeholder="Message your local AI... (Enter to send, Shift+Enter for new line)"></textarea>
+          <button id="sendBtn" type="submit" class="send-btn" title="Send message">
+            <span>➤</span>
+          </button>
+        </form>
+        <div class="composer-footer">
+          <span class="footer-hint">Enter = Send · Shift+Enter = New Line · Esc = Stop</span>
+          <span id="charCounter" class="char-counter">0 chars</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Generation Settings</h3>
+        <button class="close-modal-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="systemPromptInput">System Prompt / AI Persona</label>
+          <textarea id="systemPromptInput" rows="3" placeholder="e.g. You are an expert C++ and embedded systems engineer. Be concise and precise."></textarea>
+          <small>Instructions given to the model before conversation messages.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="temperatureInput">Temperature (Creativity): <span id="tempValue">0.7</span></label>
+          <input type="range" id="temperatureInput" min="0" max="1.5" step="0.05" value="0.7">
+          <small>Lower = more factual & deterministic. Higher = more creative.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Ollama Server Endpoint</label>
+          <input type="text" value="http://127.0.0.1:11434" disabled readonly class="disabled-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveSettingsBtn" class="primary-btn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help & Shortcuts Modal -->
+  <div id="helpModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⌨️ Quick Launch & Shortcuts</h3>
+        <button class="close-modal-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-list">
+          <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>N</kbd> <span>Create New Chat</span></div>
+          <div class="shortcut-row"><kbd>Enter</kbd> <span>Send Message</span></div>
+          <div class="shortcut-row"><kbd>Shift</kbd> + <kbd>Enter</kbd> <span>Insert New Line</span></div>
+          <div class="shortcut-row"><kbd>Esc</kbd> <span>Stop Generation</span></div>
+          <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>K</kbd> <span>Focus Search / Input</span></div>
+        </div>
+
+        <h4 class="modal-subheading">🚀 Windows One-Click Launcher</h4>
+        <p>You can run <code>start-ai.bat</code> from Windows Explorer to launch this Web AI instantly without PowerShell policy blocks!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="close-modal-btn primary-btn">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Local Script Dependencies -->
+  <script src="vendor/marked.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
